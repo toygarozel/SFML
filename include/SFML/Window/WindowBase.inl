@@ -28,6 +28,7 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/WindowBase.hpp> // NOLINT(misc-header-include-cycle)
 
+#include <queue>
 #include <type_traits>
 #include <utility>
 
@@ -107,6 +108,28 @@ void WindowBase::handleEvents(Handlers&&... handlers)
 
     while (std::optional event = pollEvent())
         event->visit(overloadSet);
+}
+
+template <typename... Handlers>
+std::queue<sf::Event> WindowBase::handleEventsReturn(Handlers&&... handlers)
+{
+    static_assert(sizeof...(Handlers) > 0, "Must provide at least one handler");
+    static_assert((Event::isEventHandler<Handlers> && ...), "Handlers must accept at least one subtype of sf::Event");
+
+    // Disable misc-const-correctness for this line since clang-tidy
+    // complains about it even though the code would become incorrect
+
+    // NOLINTNEXTLINE(misc-const-correctness)
+    priv::OverloadSet overloadSet{priv::Caller<Handlers>{std::forward<Handlers>(handlers)}...,
+                                  [](const priv::DelayOverloadResolution&) { /* ignore */ }};
+
+    std::queue<sf::Event> eventQueue;
+    while (std::optional event = pollEvent()) {
+        event->visit(overloadSet);
+        eventQueue.push(event.value());
+    }
+
+    return eventQueue;
 }
 
 } // namespace sf

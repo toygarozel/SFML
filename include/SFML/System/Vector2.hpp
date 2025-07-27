@@ -40,6 +40,8 @@ template <typename T>
 class Vector2
 {
 public:
+    using value_type = T;
+
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///

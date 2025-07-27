@@ -38,6 +38,7 @@
 
 #include <memory>
 #include <optional>
+#include <queue>
 
 #include <cstdint>
 
@@ -328,6 +329,9 @@ public:
     ////////////////////////////////////////////////////////////
     template <typename... Handlers>
     void handleEvents(Handlers&&... handlers);
+
+    template <typename... Handlers>
+    std::queue<sf::Event> handleEventsReturn(Handlers&&... handlers);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the window
